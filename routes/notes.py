@@ -1,5 +1,3 @@
-from typing import Any
-
 from flask import Blueprint, render_template, request, jsonify, session
 from extensions import db
 from models.user import User
@@ -52,7 +50,7 @@ def create_note():
     try:
         print(f"Creating note - Title: {title}, Content: {content}")
 
-        note = Note(title=title, content=content, created_at=datetime.now(), user_id=current_user.id)
+        note = Note(title=title, content=content, created_at=datetime.now(), user_id=current_user.id)  # type: ignore
 
         db.session.add(note)
         db.session.commit()
@@ -94,7 +92,7 @@ def search_notes():
         search_result = db.session.scalars(
             select(Note)
             .filter_by(user_id=current_user.id)
-            .where(or_(Note.title.like(f"%{query}%"), Note.content.like(f"%{query}%")))
+            .where(or_(Note.title.like(f"%{query}%", escape="\\"), Note.content.like(f"%{query}%", escape="\\")))
         ).all()
 
         print(f"Found {len(search_result)} matching notes")
