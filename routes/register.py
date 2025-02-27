@@ -9,8 +9,13 @@ def register():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
+        confirm_password = request.form.get("confirm_password")
         captcha_response = request.form.get("captcha")
         stored_captcha = session.get("captcha_text")
+
+        if password != confirm_password:
+            flash("Passwords do not match. Please try again.", "error")
+            return redirect(url_for("register.register"))
 
         if not stored_captcha or captcha_response.upper() != stored_captcha:
             flash("Invalid CAPTCHA. Please try again.", "error")
