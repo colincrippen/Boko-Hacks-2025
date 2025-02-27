@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, session
 from models.user import User
 from extensions import db
+import re
 
 register_bp = Blueprint("register", __name__)
 
@@ -9,8 +10,17 @@ def register():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
+        confirm_password = request.form.get("confirm_password")
         captcha_response = request.form.get("captcha")
         stored_captcha = session.get("captcha_text")
+
+        if not valid_password(password):
+            flash("Password not secure enough. Please try again.", "error")
+            return redirect(url_for("register.register"))
+
+        if password != confirm_password:
+            flash("Passwords do not match. Please try again.", "error")
+            return redirect(url_for("register.register"))
 
         if not stored_captcha or captcha_response.upper() != stored_captcha:
             flash("Invalid CAPTCHA. Please try again.", "error")
@@ -33,3 +43,16 @@ def register():
 
     return render_template("register.html")
 
+def valid_password(password):
+    if len(password) < 8:
+        return False
+    if not re.search(r"[A-Z]", password):
+        return False
+    if not re.search(r"[a-z]", password):
+        return False
+    if not re.search(r"\d", password):
+        return False
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        return False
+
+    return True
