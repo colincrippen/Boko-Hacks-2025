@@ -51,5 +51,6 @@ def logout():
     session.pop("attempts", None)
     session.pop("lockout_time", None)
     session.pop('_flashes',None)
+    session.pop('admin_logged_in', False) #logs out of admin log in
     flash("You have been logged out.", "info")
     return redirect(url_for("login.login"))
