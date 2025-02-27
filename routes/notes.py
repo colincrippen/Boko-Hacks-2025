@@ -57,17 +57,8 @@ def create_note():
 
         print(f"Note created with ID: {note.id}")
 
-        return jsonify({
-            "success": True,
-            "message": "Note created successfully",
-            "note": {
-                "id": note.id,
-                "title": note.title,
-                "content": note.content,
-                "created_at": note.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                "user_id": note.user_id,
-            },
-        })
+        return jsonify({"success": True, "message": "Note created successfully", "note": note.to_dict()})
+
     except Exception as e:
         print(f"Error creating note: {e}")
         db.session.rollback()
