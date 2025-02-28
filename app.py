@@ -1,5 +1,6 @@
 from flask import Flask
-from extensions import db
+from extensions import db, mail, migrate
+from config import Config
 from routes.home import home_bp
 from routes.hub import hub_bp
 from routes.login import login_bp
@@ -21,14 +22,14 @@ import os
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
-
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///boko_hacks.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config.from_object(Config)
 
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 db.init_app(app)
+mail.init_app(app)
+migrate.init_app(app, db)
 
 # Register Blueprints
 app.register_blueprint(home_bp)
