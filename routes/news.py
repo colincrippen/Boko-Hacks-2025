@@ -58,6 +58,9 @@ def fetch_news():
         # Get category from request, default to business
         category = request.args.get('category', 'business')
         
+        # Get articles count from the request, default to 10
+        articles_count = int(request.args.get('articlesCount', 10))
+        
         # Map our category to API category
         api_category = CATEGORY_MAPPING.get(category, 'business')
         api_url = f"{NEWS_API_BASE_URL}/top-headlines"
@@ -68,23 +71,21 @@ def fetch_news():
             "apiKey": NEWS_API_KEY
         }
         
-        print(f"Fetching news from: {api_url} with params: {params}")
-        
         # Fetch news from external API
         response = requests.get(api_url, params=params, timeout=10)
         
         if response.status_code == 200:
             data = response.json()
-            articles = data.get('articles', [])[:10]  # Limit to 10 articles
+            articles = data.get('articles', [])[:articles_count]  # Limit to the requested number of articles
             
+            # Handle filters if provided
             filter_param = request.args.get('filter', '{}')
-            
             try:
-                filter_options = json.loads(filter_param)
+                filter_options = json.loads(filter_param)  # Parsing the filter options
                 print(f"Filter options: {filter_options}")
                 
                 if filter_options.get('showInternal') == True:
-                    # Add internal news to the results
+                    # Add internal news to the results if requested
                     print("Adding internal news to results!")
                     articles = INTERNAL_NEWS + articles
             except json.JSONDecodeError:

@@ -2,11 +2,11 @@ function initializeApp() {
     console.log('News app initialization started');
     setupEventListeners();
     fetchNews('business');
+    setupSettingsDialog();
 }
 
 function cleanupApp() {
     console.log('News app cleanup');
-    // Reset any resources used by the app
     const newsContainer = document.getElementById('news-root');
     if (newsContainer) {
         const newsList = newsContainer.querySelector('.news-list');
@@ -19,82 +19,153 @@ function cleanupApp() {
 function setupEventListeners() {
     const newsContainer = document.getElementById('news-root');
     
-    // Event delegation for category buttons
     newsContainer.addEventListener('click', function(e) {
         if (e.target.classList.contains('filter-btn')) {
             const category = e.target.getAttribute('data-category');
             if (category) {
-                // Update active button
                 document.querySelectorAll('.filter-btn').forEach(btn => {
                     btn.classList.remove('active');
                 });
                 e.target.classList.add('active');
-                
-                // Fetch news for the selected category
                 fetchNews(category);
             }
         }
     });
 
-    // Toggle advanced options
-    const toggleBtn = document.getElementById('toggle-advanced');
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', function() {
-            const advancedSection = document.getElementById('advanced-options');
-            if (advancedSection.style.display === 'none') {
-                advancedSection.style.display = 'block';
-                this.textContent = 'Hide Advanced Options';
+    const searchBtn = document.getElementById('search-button');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function() {
+            const searchTerm = document.getElementById('search-news').value.trim();
+            if (searchTerm) {
+                alert("Search functionality is not implemented in this version.");
             } else {
-                advancedSection.style.display = 'none';
-                this.textContent = 'Show Advanced Options';
+                alert("Please enter a search term.");
             }
-        });
-    }
-
-    // Custom URL button
-    const applyUrlBtn = document.getElementById('apply-custom-url');
-    if (applyUrlBtn) {
-        applyUrlBtn.addEventListener('click', function() {
-            const customUrl = document.getElementById('custom-api-url').value.trim();
-            if (customUrl) {
-                const activeCategory = document.querySelector('.filter-btn.active').getAttribute('data-category');
-                fetchNews(activeCategory, customUrl);
-            } else {
-                alert('Please enter a custom API URL');
-            }
-        });
-    }
-
-    // Fetch source button
-    const fetchSourceBtn = document.getElementById('fetch-source');
-    if (fetchSourceBtn) {
-        fetchSourceBtn.addEventListener('click', function() {
-            fetchSourceDetails();
-        });
-    }
-
-    // Import news button
-    const importNewsBtn = document.getElementById('import-news');
-    if (importNewsBtn) {
-        importNewsBtn.addEventListener('click', function() {
-            importNewsData();
         });
     }
 }
 
-function fetchNews(category, customUrl = null) {
+function setupSettingsDialog() {
+    const settingsDialogHTML = `
+        <div id="settings-dialog" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                                    background: white; padding: 20px; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.3);
+                                    z-index: 1000; display: none; width: 300px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;">News Settings</h3>
+                <button id="close-settings" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">×</button>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Articles Per Page</label>
+                <select id="articles-count" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="5">5 articles</option>
+                    <option value="10" selected>10 articles</option>
+                    <option value="15">15 articles</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Default Category</label>
+                <select id="default-category" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="business" selected>Business</option>
+                    <option value="technology">Technology</option>
+                    <option value="world">World</option>
+                </select>
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button id="save-settings" style="background-color: #501214; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">Save Settings</button>
+            </div>
+            <!-- Hidden developer section - only shows in dev tools -->
+            <div style="display: none;" id="dev-options">
+                <hr style="margin: 15px 0;">
+                <h4>Developer Options</h4>
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; margin-bottom: 5px;">API Filters (JSON)</label>
+                    <textarea id="filter-json" style="width: 100%; height: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder='{"count": 10}'></textarea>
+                </div>
+                <button id="apply-filters" style="background-color: #333; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Apply</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', settingsDialogHTML);
+
+    const settingsButton = document.getElementById('settings-button');
+    if (settingsButton) {
+        settingsButton.addEventListener('click', function() {
+            document.getElementById('settings-dialog').style.display = 'block';
+        });
+    }
+
+    const closeSettingsButton = document.getElementById('close-settings');
+    if (closeSettingsButton) {
+        closeSettingsButton.addEventListener('click', function() {
+            document.getElementById('settings-dialog').style.display = 'none';
+        });
+    }
+
+    const saveSettingsButton = document.getElementById('save-settings');
+    if (saveSettingsButton) {
+        saveSettingsButton.addEventListener('click', function() {
+            const currentSettings = {
+                articlesCount: parseInt(document.getElementById('articles-count').value),
+                defaultCategory: document.getElementById('default-category').value,
+                filters: {}
+            };
+
+            const devOptions = document.getElementById('dev-options');
+            if (window.getComputedStyle(devOptions).display !== 'none') {
+                try {
+                    const filterJSON = document.getElementById('filter-json').value;
+                    if (filterJSON.trim()) {
+                        currentSettings.filters = JSON.parse(filterJSON);
+                    }
+                } catch (e) {
+                    console.error('Invalid JSON filters:', e);
+                    alert('Invalid JSON format for filters');
+                    return;
+                }
+            }
+
+            document.getElementById('settings-dialog').style.display = 'none';
+
+            const activeCategory = document.querySelector('.filter-btn.active').getAttribute('data-category');
+            fetchNews(activeCategory, currentSettings.filters); // Pass filters along with category
+        });
+    }
+
+    const applyFiltersButton = document.getElementById('apply-filters');
+    if (applyFiltersButton) {
+        applyFiltersButton.addEventListener('click', function() {
+            try {
+                const filterJSON = document.getElementById('filter-json').value;
+                if (filterJSON.trim()) {
+                    const currentSettings = { filters: JSON.parse(filterJSON) };
+                    const activeCategory = document.querySelector('.filter-btn.active').getAttribute('data-category');
+                    fetchNews(activeCategory, currentSettings.filters); // Pass filters along with category
+                }
+            } catch (e) {
+                console.error('Invalid JSON filters:', e);
+                alert('Invalid JSON format for filters');
+            }
+        });
+    }
+}
+
+function fetchNews(category, filters = {}) {
     const newsContainer = document.getElementById('news-root');
     const newsList = newsContainer.querySelector('.news-list');
     
     // Show loading state
     newsList.innerHTML = '<div class="loading">Loading news feed...</div>';
     
-    // Build the API URL
+    // Build the base API URL
     let apiUrl = `/apps/news/fetch?category=${category}`;
-    if (customUrl) {
-        apiUrl += `&api_url=${encodeURIComponent(customUrl)}`;
-    }
     
+    // Append filters to the URL as query parameters
+    if (filters && Object.keys(filters).length > 0) {
+        const filterParam = JSON.stringify(filters);
+        apiUrl += `&filter=${encodeURIComponent(filterParam)}`;
+    }
+
     console.log(`Fetching news from: ${apiUrl}`);
     
     // Fetch news from the server
