@@ -31,12 +31,14 @@ def login():
             session["user"] = user.username
             session.pop("attempts", None)
             session.pop("lockout_time", None)
+            #send email saying someone has logged into their account
             flash("Login successful!", "success")
             return redirect(url_for("hub.hub"))
         else:
             session["attempts"] += 1 # addition to fail counter
             remaining_attempts = MAX_ATTEMPTS - session["attempts"]
             if session["attempts"] >= MAX_ATTEMPTS:
+                #send email to user saying they account is trying to be accesed 
                 session["lockout_time"] = time.time()
                 flash(f"Too many failed attempts. Try again in {TIMEOUT_SECONDS} seconds.", "error")
             else:
