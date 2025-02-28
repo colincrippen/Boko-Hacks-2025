@@ -1,11 +1,17 @@
 from flask import Blueprint, render_template, jsonify, request
 import requests
 import json
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 
 news_bp = Blueprint('news', __name__, url_prefix='/apps/news')
 
 # Base URL for the News API
-NEWS_API_BASE_URL = "https://saurav.tech/NewsAPI"
+NEWS_API_BASE_URL = "https://newsapi.org/v2/"
 
 # Mapping of our categories to API categories
 CATEGORY_MAPPING = {
@@ -54,12 +60,18 @@ def fetch_news():
         
         # Map our category to API category
         api_category = CATEGORY_MAPPING.get(category, 'business')
-        api_url = f"{NEWS_API_BASE_URL}/top-headlines/category/{api_category}/{DEFAULT_COUNTRY}.json"
+        api_url = f"{NEWS_API_BASE_URL}/top-headlines"
+
+        params = {
+            "category": api_category,
+            "country": DEFAULT_COUNTRY,
+            "apiKey": NEWS_API_KEY
+        }
         
-        print(f"Fetching news from: {api_url}")
+        print(f"Fetching news from: {api_url} with params: {params}")
         
         # Fetch news from external API
-        response = requests.get(api_url, timeout=10)
+        response = requests.get(api_url, params=params, timeout=10)
         
         if response.status_code == 200:
             data = response.json()
