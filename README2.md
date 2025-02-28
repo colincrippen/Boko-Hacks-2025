@@ -1,7 +1,7 @@
 ## Team Member Names
-Colin Crippen
-CJ Faircloth
-Ryan Fitzgerald
+- Colin Crippen
+- CJ Faircloth
+- Ryan Fitzgerald
 
 ## Tools/Resources Used
 - NewsAPI
@@ -11,7 +11,7 @@ Ryan Fitzgerald
 1. Clone the repository:
 ```bash
 git clone https://github.com/colincrippen/Boko-Hacks-2025.git
-cd boko-hacks-2025
+cd Boko-Hacks-2025
 ```
 
 2. Creating and activating a virtual environment using VSCode:
