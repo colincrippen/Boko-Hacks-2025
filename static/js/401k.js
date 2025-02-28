@@ -60,7 +60,7 @@ function contribute() {
         cents = 0;
     }
 
-    if (isNaN(dollars) || isNaN(cents) || (dollars <= 0 && cents <= 0) || amountString.includes("-")) {
+    if (isNaN(dollars) || isNaN(cents) || (dollars <= 0 && cents <= 0) || cents > 99 || amountString.includes("-")) {
         showToast("Enter a valid contribution amount!", "error");
         return;
     }
