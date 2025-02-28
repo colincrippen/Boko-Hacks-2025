@@ -9,11 +9,11 @@ lock = Lock()
 
 retirement_bp = Blueprint("retirement", __name__, url_prefix="/apps/401k")
 
-user_accounts = {
-    "alice": {"funds": 10000, "401k_balance": 5000},
-    "bob": {"funds": 12000, "401k_balance": 7500},
-    "charlie": {"funds": 15000, "401k_balance": 8084},
-    "admin": {"funds": 20000, "401k_balance": 12000}
+user_accounts: dict[str, dict[str, int]] = {
+    "alice": {"funds": 10000_00, "balance_401k": 5000_00},
+    "bob": {"funds": 12000_00, "balance_401k": 7500_00},
+    "charlie": {"funds": 15000_00, "balance_401k": 8084_00},
+    "admin": {"funds": 20000_00, "balance_401k": 12000_00}
 }
 
 @retirement_bp.route("/")
@@ -29,7 +29,7 @@ def get_balance():
         
     username = session["user"]
     if username not in user_accounts:
-        user_accounts[username] = {"funds": 10000, "401k_balance": 0}
+        user_accounts[username] = {"funds": 10000_00, "balance_401k": 0}
         
     return jsonify(user_accounts[username])
 
@@ -39,11 +39,11 @@ def contribute():
         return jsonify({"error": "Not logged in"}), 401
         
     data = request.get_json()
-    amount = data.get("amount", 0)
+    amount: int = data.get("amount", 0)
     
     username = session["user"]
     if username not in user_accounts:
-        user_accounts[username] = {"funds": 10000, "401k_balance": 0}
+        user_accounts[username] = {"funds": 10000_00, "balance_401k": 0}
     
     with lock:
         user_data = user_accounts[username]
@@ -52,29 +52,29 @@ def contribute():
             return jsonify({
                 "message": "Invalid contribution amount!", 
                 "funds": user_data["funds"],
-                "401k_balance": user_data["401k_balance"]
+                "balance_401k": user_data["balance_401k"]
             }), 400
         
         if amount > user_data["funds"]:
             return jsonify({
                 "message": "Insufficient personal funds for this contribution!", 
                 "funds": user_data["funds"],
-                "401k_balance": user_data["401k_balance"]
+                "balance_401k": user_data["balance_401k"]
             }), 400
 
 
         time.sleep(2)  
 
-        company_match = amount * 0.5
+        company_match = round(amount * 0.5)
         total_contribution = amount + company_match
 
         user_data["funds"] -= amount  # Deduct funds
-        user_data["401k_balance"] += total_contribution  # Add to 401k balance
+        user_data["balance_401k"] += total_contribution  # Add to 401k balance
 
     return jsonify({
-        "message": f"Contributed ${amount}. Employer matched ${company_match}!",
+        "message": f"Contributed ${amount // 100}.{(amount % 100):02}. Employer matched ${company_match // 100}.{(company_match % 100):02}!",
         "funds": user_data["funds"],
-        "401k_balance": user_data["401k_balance"]
+        "balance_401k": user_data["balance_401k"]
     })
 
 @retirement_bp.route("/reset", methods=["POST"])
@@ -87,13 +87,14 @@ def reset_account():
         return jsonify({
             "message": "Account not found!", 
             "funds": 0,
-            "401k_balance": 0
+            "balance_401k": 0
         }), 404
     
-    user_accounts[username] = {"funds": 10000, "401k_balance": 0}
+    user_accounts[username] = {"funds": 10000_00, "balance_401k": 0}
+    print(user_accounts[username]["balance_401k"])
     
     return jsonify({
         "message": "Account reset successfully!",
         "funds": user_accounts[username]["funds"],
-        "401k_balance": user_accounts[username]["401k_balance"]
+        "balance_401k": user_accounts[username]["balance_401k"]
     })

@@ -21,8 +21,14 @@ function getBalance() {
     fetch(`/apps/401k/balance`)
         .then(res => res.json())
         .then(data => {
-            fundsElement.innerText = `$${data.funds}`;
-            balanceElement.innerText = `$${data['401k_balance']}`;
+            const fundsDollars = Math.floor(data.funds / 100);
+            const fundsCents = Math.floor(data.funds % 100).toString().padStart(2, "0");
+
+            const balance401kDollars = Math.floor(data.balance_401k / 100);
+            const balance401kCents = Math.floor(data.balance_401k % 100).toString().padStart(2, "0");
+
+            fundsElement.innerText = `$${fundsDollars}.${fundsCents}`;
+            balanceElement.innerText = `$${balance401kDollars}.${balance401kCents}`;
         })
         .catch(err => {
             console.error("Error fetching balance:", err);
@@ -41,9 +47,20 @@ function contribute() {
         return;
     }
     
-    let amount = parseFloat(amountElement.value);
+    const amountString = amountElement.value;
+    const decimalIndex = amountString.indexOf(".");
 
-    if (isNaN(amount) || amount <= 0) {
+    let dollars, cents;
+
+    if (decimalIndex !== -1) {
+        dollars = parseInt(amountString.substring(0, decimalIndex));
+        cents = parseInt(amountString.substring(decimalIndex + 1).padEnd(2, "0"));
+    } else {
+        dollars = parseInt(amountString);
+        cents = 0;
+    }
+
+    if (isNaN(dollars) || isNaN(cents) || (dollars <= 0 && cents <= 0) || cents > 99 || amountString.includes("-")) {
         showToast("Enter a valid contribution amount!", "error");
         return;
     }
@@ -53,7 +70,7 @@ function contribute() {
     fetch('/apps/401k/contribute', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: amount })
+        body: JSON.stringify({ amount: (dollars * 100) + cents })
     })
     .then(res => res.json())
     .then(data => {
@@ -67,8 +84,14 @@ function contribute() {
         const balanceElement = document.getElementById("balance");
         
         if (fundsElement && balanceElement) {
-            fundsElement.innerText = `$${data.funds}`;
-            balanceElement.innerText = `$${data['401k_balance']}`;
+            const fundsDollars = Math.floor(data.funds / 100);
+            const fundsCents = Math.floor(data.funds % 100).toString().padStart(2, "0");
+
+            const balance401kDollars = Math.floor(data.balance_401k / 100);
+            const balance401kCents = Math.floor(data.balance_401k % 100).toString().padStart(2, "0");
+
+            fundsElement.innerText = `$${fundsDollars}.${fundsCents}`;
+            balanceElement.innerText = `$${balance401kDollars}.${balance401kCents}`;
         }
     })
     .catch(err => {
@@ -98,8 +121,14 @@ function resetAccount() {
         const balanceElement = document.getElementById("balance");
         
         if (fundsElement && balanceElement) {
-            fundsElement.innerText = `$${data.funds}`;
-            balanceElement.innerText = `$${data['401k_balance']}`;
+            const fundsDollars = Math.floor(data.funds / 100);
+            const fundsCents = Math.floor(data.funds % 100).toString().padStart(2, "0");
+
+            const balance401kDollars = Math.floor(data.balance_401k / 100);
+            const balance401kCents = Math.floor(data.balance_401k % 100).toString().padStart(2, "0");
+
+            fundsElement.innerText = `$${fundsDollars}.${fundsCents}`;
+            balanceElement.innerText = `$${balance401kDollars}.${balance401kCents}`;
         }
     })
     .catch(err => {
