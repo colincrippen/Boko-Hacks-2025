@@ -4,8 +4,12 @@ from functools import wraps
 from models.user import User
 from models.admin import Admin
 from extensions import db
+import time
 
 admin_bp = Blueprint("admin", __name__)
+
+MAX_ATTEMPTS = 3 # max fails
+TIMEOUT_SECONDS = 180
 
 DEFAULT_ADMIN = {
     "username": "admin",
@@ -71,6 +75,21 @@ def check_admin():
 @admin_bp.route("/admin", methods=["GET", "POST"])
 def admin():
     """Main admin route - handles both GET and POST requests"""
+    
+    if "lockout_time" in session:
+        elapsed_time = time.time() - session["lockout_time"]
+        if elapsed_time < TIMEOUT_SECONDS:
+            remaining_time = int(TIMEOUT_SECONDS - elapsed_time)
+            return jsonify({
+                'success': False,
+                'message': f"Too many failed attempts. Please try again in {remaining_time} seconds."
+            })
+        else:
+            session.pop("lockout_time", None)
+            session["attempts"] = 0
+    if "attempts" not in session:
+        session["attempts"] = 0 # default set fails to 0
+    
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
@@ -83,13 +102,15 @@ def admin():
                 session['admin_logged_in'] = True
                 session['admin_username'] = username
                 session['is_default_admin'] = (admin_role.is_default == True)
-                
+                session.pop("attempts", None)
+                session.pop("lockout_time", None)
+
                 return jsonify({
                     'success': True,
                     'is_default_admin': admin_role.is_default,
                     'admins': get_admin_list()
                 })
-        
+            
         try:
             query = f"SELECT * FROM users WHERE username = '{username}' AND password_hash = '{password}'"
             result = db.session.execute(query)
@@ -110,10 +131,22 @@ def admin():
                     })
         except Exception as e:
             print(f"SQL injection attempt failed: {e}")
-        
+
+        session["attempts"] += 1
+        remaining_attempts = MAX_ATTEMPTS - session["attempts"]
+
+        if session["attempts"] >= MAX_ATTEMPTS:
+            session["lockout_time"] = time.time()
+            return jsonify({
+                'success': False,
+                'message': f"Too many failed attempts. Try again in {TIMEOUT_SECONDS} seconds."
+            
+                })
+
         return jsonify({
             'success': False,
-            'message': "Invalid admin credentials."
+            'message': f"Invalid admin credentials. Attempts left {remaining_attempts}."
+            
         })
     
     return render_template("admin.html", 
