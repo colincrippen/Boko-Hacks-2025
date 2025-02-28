@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <title>Register - BokoHacks</title>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
   <header>
@@ -40,23 +41,15 @@
 
         <label for="confirm_password">Confirm Password:</label>
         <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm your password" required>
-        <ul>
-          <p>Password Requirements: </p>
-          <li>At least 8 characters long.</li>
-          <li>At least one uppercase letter.</li>
-          <li>At least one lowercase letter.</li>
-          <li>At least one number.</li>
-          <li>At least one special character: ([!@#$%^&*(),.?\":{}|<>]).</li>
-        </ul>
-        <label for="email">Email:</label>
-        <input type="text" id="email" name="email" placeholder="Choose a email" required>
-        
-        <label for="captcha">Enter CAPTCHA:</label>
-        <div class="captcha-box">
-          <img src="{{ url_for('captcha.get_captcha') }}" alt="CAPTCHA" class="captcha-image">
-        </div>
-        <input type="text" id="captcha" name="captcha" placeholder="Enter the text shown above" required>
-        
+        <p>Password Requirements: <br>
+          At least 8 characters long. <br>
+          At least one uppercase letter. <br>
+          At least one lowercase letter. <br>
+          At least one number. <br>
+          At least one special character: ([!@#$%^&*(),.?\":{}|<>]).
+        </p>
+        <!-- Google reCAPTCHA -->
+        <div class="g-recaptcha" data-sitekey="6Lc_2uUqAAAAAJA_F7Lm_gvGZ8gTHaCY7RteUmV8"></div>
         <button type="submit">Register</button>
       </form>
       <p>Already have an account? <a href="{{ url_for('login.login') }}">Login here</a>.</p>
