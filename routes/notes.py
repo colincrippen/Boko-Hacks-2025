@@ -79,6 +79,7 @@ def search_notes():
     print(f"Search query: {query}")
 
     try:
+        # vulnerable SQL:
         # sql = f"SELECT * FROM notes WHERE title LIKE '%{query}%' OR content LIKE '%{query}%'"
         search_result = db.session.scalars(
             select(Note)
@@ -110,6 +111,10 @@ def delete_note(note_id):
         if not note:
             print(f"Note not found: {note_id}")
             return jsonify({"success": False, "error": f"Note with ID {note_id} not found"}), 404
+        
+        if current_user.id != note.user_id:
+            print("You can only delete your own note!")
+            return jsonify({"success": False, "error": "You can only delete your own note!"})
 
         print(f"Deleting note ID: {note_id}, Title: {note.title}, Owner: {note.user_id}")
 
