@@ -110,7 +110,7 @@ function setupSettingsDialog() {
                 defaultCategory: document.getElementById('default-category').value,
                 filters: {}
             };
-
+        
             const devOptions = document.getElementById('dev-options');
             if (window.getComputedStyle(devOptions).display !== 'none') {
                 try {
@@ -124,33 +124,35 @@ function setupSettingsDialog() {
                     return;
                 }
             }
-
+        
             document.getElementById('settings-dialog').style.display = 'none';
-
-            const activeCategory = document.querySelector('.filter-btn.active').getAttribute('data-category');
-            fetchNews(activeCategory, currentSettings.filters); // Pass filters along with category
+        
+            // Use the saved default category and article count
+            const activeCategory = currentSettings.defaultCategory || document.querySelector('.filter-btn.active').getAttribute('data-category');
+            const articlesCount = currentSettings.articlesCount || 10;
+        
+            // Pass the settings along with the filters
+            fetchNews(activeCategory, currentSettings.filters, articlesCount);
         });
     }
 
-    const applyFiltersButton = document.getElementById('apply-filters');
-    if (applyFiltersButton) {
-        applyFiltersButton.addEventListener('click', function() {
-            try {
-                const filterJSON = document.getElementById('filter-json').value;
-                if (filterJSON.trim()) {
-                    const currentSettings = { filters: JSON.parse(filterJSON) };
-                    const activeCategory = document.querySelector('.filter-btn.active').getAttribute('data-category');
-                    fetchNews(activeCategory, currentSettings.filters); // Pass filters along with category
-                }
-            } catch (e) {
-                console.error('Invalid JSON filters:', e);
-                alert('Invalid JSON format for filters');
+    applyFiltersButton.addEventListener('click', function() {
+        try {
+            const filterJSON = document.getElementById('filter-json').value;
+            if (filterJSON.trim()) {
+                const currentSettings = { filters: JSON.parse(filterJSON) };
+                const activeCategory = document.querySelector('.filter-btn.active').getAttribute('data-category');
+                const articlesCount = document.getElementById('articles-count').value || 10; // Default to 10 if not set
+                fetchNews(activeCategory, currentSettings.filters, articlesCount); // Pass filters and articlesCount
             }
-        });
-    }
+        } catch (e) {
+            console.error('Invalid JSON filters:', e);
+            alert('Invalid JSON format for filters');
+        }
+    });
 }
 
-function fetchNews(category, filters = {}) {
+function fetchNews(category, filters = {}, articlesCount = 10) {
     const newsContainer = document.getElementById('news-root');
     const newsList = newsContainer.querySelector('.news-list');
     
@@ -158,7 +160,7 @@ function fetchNews(category, filters = {}) {
     newsList.innerHTML = '<div class="loading">Loading news feed...</div>';
     
     // Build the base API URL
-    let apiUrl = `/apps/news/fetch?category=${category}`;
+    let apiUrl = `/apps/news/fetch?category=${category}&articlesCount=${articlesCount}`;
     
     // Append filters to the URL as query parameters
     if (filters && Object.keys(filters).length > 0) {

@@ -22,29 +22,7 @@ CATEGORY_MAPPING = {
 
 DEFAULT_COUNTRY = 'us'
 
-INTERNAL_NEWS = [
-    {
-        "title": "CONFIDENTIAL: Security Breach Report Q3",
-        "description": "Details of recent security incidents affecting customer data. For internal review only.",
-        "url": "#internal-only",
-        "publishedAt": "2025-01-15T08:30:00Z",
-        "urlToImage": ""
-    },
-    {
-        "title": "CONFIDENTIAL: Upcoming Product Launch",
-        "description": "Specifications for our next-gen product launch in Q2. Contains proprietary information.",
-        "url": "#internal-only",
-        "publishedAt": "2025-02-01T10:15:00Z",
-        "urlToImage": ""
-    },
-    {
-        "title": "CONFIDENTIAL: Internal API Credentials",
-        "description": "API_KEY: 5x6hdPQmSK2aT9E3bL8nZ7yRfV4wX1  ADMIN_KEY: jKq2P8zX5sW7vT1yR4aB9nL6cE3hG",
-        "url": "#internal-only",
-        "publishedAt": "2025-01-30T14:45:00Z",
-        "urlToImage": ""
-    }
-]
+INTERNAL_NEWS = []
 
 @news_bp.route('/')
 def news_page():
