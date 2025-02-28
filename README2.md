@@ -22,7 +22,17 @@ cd Boko-Hacks-2025
 - Select "Python 3.12.2" or a similar up-to-date Python interpreter path
 - Check off requirements.txt and select "OK"
 
-3. Start the application: 
+3. Open "RENAME_TO_DOT_ENV" file
+
+4. For the judges' convenience, copy and paste the following into the "RENAME_TO_DOT_ENV" file
+```bash
+NEWS_API_KEY='49a12ef1b1e54d89bfbb0b0e9519eca6'
+RECAPTCHA_SECRET_KEY='6Lc_2uUqAAAAAEfO4VcZ00trkCmI_jXITRBAAfix'
+```
+
+5. Rename "RENAME_TO_DOT_ENV" to ".env"
+
+6. Start the application: 
 ```bash
 python app.py
 ```
