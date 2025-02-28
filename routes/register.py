@@ -1,5 +1,6 @@
 import requests
 from flask import Blueprint, render_template, request, flash, redirect, url_for, session
+from flask_mailman import EmailMessage
 from models.user import User
 from extensions import db
 import re
@@ -16,6 +17,7 @@ def register():
         username = request.form.get("username")
         password = request.form.get("password")
         confirm_password = request.form.get("confirm_password")
+        email = request.form.get("email")
         recaptcha_response = request.form.get("g-recaptcha-response")
 
         # Verify reCAPTCHA
@@ -30,16 +32,30 @@ def register():
         if password != confirm_password:
             flash("Passwords do not match. Please try again.", "error")
             return redirect(url_for("register.register"))
+        
+        if not is_valid_email(email):
+            flash("Email not Valid. Please try again.", "error")
+            return redirect(url_for("register.register"))
+
+        session.pop("captcha_text", None)
 
         existing_user = User.query.filter_by(username=username).first()
         if existing_user:
             flash("Username already exists. Please choose a different one.", "error")
             return redirect(url_for("register.register"))
+        
+        existing_email = User.query.filter_by(email=email).first()
 
-        new_user = User(username=username)
+        if existing_email:
+            flash("Email already exists. Please choose a different one.", "error")
+            return redirect(url_for("register.register"))
+        
+        new_user = User(username=username, email=email)
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
+
+        send_registration_email(email)
 
         flash("Registration successful! You can now log in.", "success")
         return redirect(url_for("login.login"))
@@ -77,3 +93,20 @@ def valid_password(password):
         return False
 
     return True
+
+def is_valid_email(email):
+    pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+    return re.match(pattern, email) is not None
+
+
+def send_registration_email(email: str) -> None:
+    subject = "Welcome to Boko Hacks!"
+    body = """
+You've succesfully registered for Boko Hacks!
+
+Not you?
+Sounds like someone registered with your email and didn't tell you...
+"""
+
+    msg = EmailMessage(subject, body, to=[email])
+    msg.send()
