@@ -30,7 +30,7 @@ cd Boko-Hacks-2025
 
 5. In the `RENAME_TO_DOT_ENV` file, add your email and the app password as follows:
     - `GMAIL_USERNAME='<your email>'`
-    - `'GMAIL_PASSWORD='<your app password>'`
+    - `GMAIL_PASSWORD='<your app password>'`
 
 6. For the judges' convenience, copy and paste the following into the "RENAME_TO_DOT_ENV" file
 ```bash
