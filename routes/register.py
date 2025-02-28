@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, session
+from flask_mailman import EmailMessage
 from models.user import User
 from extensions import db
 import re
@@ -42,11 +43,12 @@ def register():
             flash("Email already exists. Please choose a different one.", "error")
             return redirect(url_for("register.register"))
         
-        new_user = User(username=username)
+        new_user = User(username=username, email=email)
         new_user.set_password(password)
-        new_user.email(email)
         db.session.add(new_user)
         db.session.commit()
+
+        send_registration_email(email)
 
         flash("Registration successful! You can now log in.", "success")
         return redirect(url_for("login.login"))
@@ -70,3 +72,16 @@ def valid_password(password):
 def is_valid_email(email):
     pattern = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
     return re.match(pattern, email) is not None
+
+
+def send_registration_email(email: str) -> None:
+    subject = "Welcome to Boko Hacks!"
+    body = """
+You've succesfully registered for Boko Hacks!
+
+Not you?
+Sounds like someone registered with your email and didn't tell you...
+"""
+
+    msg = EmailMessage(subject, body, to=[email])
+    msg.send()
